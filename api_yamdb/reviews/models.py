@@ -40,13 +40,13 @@ class Titles(models.Model):
         help_text='Введите название произведения',
         max_length=256,
     )
-    year = models.DateField(
+    year = models.IntegerField(
         verbose_name='Дата публикации',
-        auto_now_add=False
     )
     description = models.TextField(
         verbose_name='Описание произведения',
-        help_text='Опишите произведение'
+        help_text='Опишите произведение',
+        null=True
     )
     categories = models.ForeignKey(
         Categories,
@@ -58,7 +58,7 @@ class Titles(models.Model):
         null=True
     )
     genres = models.ForeignKey(
-        Categories,
+        Genres,
         on_delete=models.SET_NULL,
         verbose_name='Жанр',
         related_name='genre',
