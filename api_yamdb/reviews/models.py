@@ -1,6 +1,10 @@
 from django.db import models
 
 # Create your models here.
+
+User = get_user_model()
+
+
 class Categories(models.Model):
     name = models.CharField(
         verbose_name='Название категории',
@@ -16,6 +20,7 @@ class Categories(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Genres(models.Model):
     name = models.CharField(
@@ -70,8 +75,74 @@ class Titles(models.Model):
     def __str__(self):
         return self.name
 
-class Reviews(models.Model):
-    pass
 
-class Comments(models.Model):
-    pass
+class Review(models.Model):  # Надо допилить на счет полей: score и review_id(я пока хз, в инете смотрю)
+    """Модель отзывов."""
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+    text = models.TextField(
+        max_length=1000,
+        verbose_name='Отзыв',
+        help_text='Напишите отзыв к фильму'
+    )
+    pub_date = models.DateTimeField(
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+
+    def __str__(self):
+        return self.text
+
+
+class Comment(models.Model):
+    """Модель комментариев."""
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    text = models.TextField(
+        max_length=1700,
+        verbose_name='Комментарий',
+        help_text='Введите комментарий к фильму'
+    )
+    pub_date = models.DateTimeField(
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'Коментарий'
+        verbose_name_plural = 'Коментарии'
+
+    def __str__(self):
+        return self.text
+
+
+class Rating(models.Model):
+    """Модель рейтинга."""
+    rate = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(10.0)
+        ]
+    )
+    story = models.ForeignKey(
+        Titles,
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
