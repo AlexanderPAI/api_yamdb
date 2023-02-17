@@ -15,7 +15,7 @@ ROLES = (
 class User(AbstractUser):
     """Кастомная модель пользователя"""
     email = models.EmailField(
-        blank=True,
+        unique=True,
         verbose_name='Электронная почта',
     )
     role = models.CharField(
@@ -28,8 +28,15 @@ class User(AbstractUser):
         blank=True,
         verbose_name='Биография'
     )
-
+    
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_user'
+            )
+        ]
+
         verbose_name='Пользователь'
         verbose_name_plural='Пользователи'
     
