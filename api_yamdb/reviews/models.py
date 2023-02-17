@@ -17,6 +17,10 @@ class Categories(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['-name']
+
+
 class Genres(models.Model):
     name = models.CharField(
         verbose_name='Название категории',
@@ -33,6 +37,9 @@ class Genres(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['-name']
+
 
 class Titles(models.Model):
     name = models.CharField(
@@ -48,27 +55,34 @@ class Titles(models.Model):
         help_text='Опишите произведение',
         null=True
     )
-    categories = models.ForeignKey(
+    category = models.ForeignKey(
         Categories,
         on_delete=models.SET_NULL,
         verbose_name='Категория',
-        related_name='categories',
+        related_name='category',
         help_text='Выберите категорию',
         blank=True,
         null=True
     )
-    genres = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genres,
-        on_delete=models.SET_NULL,
         verbose_name='Жанр',
         related_name='genre',
         help_text='Выберите жанр',
-        blank=True,
-        null=True
+        through='GenresTitles'
     )
 
     def __str__(self):
         return self.name
+
+
+class GenresTitles(models.Model):
+    genre = models.ForeignKey(Genres, on_delete=models.CASCADE)
+    title = models.ForeignKey(Titles, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.genre} {self.title}'
+
 
 class Reviews(models.Model):
     pass
