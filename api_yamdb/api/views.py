@@ -4,8 +4,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAdminUser, DjangoModelPermissionsOrAnonReadOnly
 
-from api.permissions import IsAdminOrReadOnly
-from api.serializers import GenresSerializer, CategoriesSerializer, TitlesSerializer, GenreTitleSerializer
+from api.permissions import IsAdminOrReadOnly, IsAdminPermission
+from api.serializers import GenresSerializer, CategoriesSerializer, TitlesSerializer, GenreTitleSerializer, UserSerializer
 
 
 from reviews.models import Genres, Titles, Categories
