@@ -1,5 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.filters import  SearchFilter
+from rest_framework.permissions import IsAdminUser, DjangoModelPermissionsOrAnonReadOnly
 
 from api.permissions import IsAdminPermission # IsAdminOrReadOnly
 from api.serializers import GenresSerializer, CategoriesSerializer, TitlesSerializer, UserSerializer
@@ -24,22 +25,25 @@ class GetPostDeleteViewSet(
 class GenresViewSet(GetPostDeleteViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
-    #permission_classes = (IsAdminOrReadOnly,)
-
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    # permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
 
 class CategoriesViewSet(GetPostDeleteViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
-    #permission_classes = (IsAdminOrReadOnly,)
-
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    # permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
-    #permission_classes = (IsAdminOrReadOnly,)
-    #filter_backends = (SearchFilter,)
-    pagination_class = None
-    search_fields = ('genres', 'categories', 'year', 'name')
+    # permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('genre', 'category', 'year', 'name')
 
 
 class UserViewSet(viewsets.ModelViewSet):
