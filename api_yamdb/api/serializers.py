@@ -6,6 +6,7 @@ from reviews.models import Titles, Categories, Genres
 
 from users.models import User
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.decorators import action
 
 
 class TitlesSerializer(serializers.ModelSerializer):
@@ -44,15 +45,14 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-
+    
     class Meta:
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
-        model = User
-
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=('username', 'email')
-            )
-        ]
         
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        #validators = [
+        #    UniqueTogetherValidator(
+        #        queryset=User.objects.all(),
+        #        fields=('username', 'email')
+        #    )
+        #]

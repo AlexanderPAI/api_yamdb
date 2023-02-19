@@ -7,8 +7,10 @@ from reviews.models import Genres, Titles, Categories
 from users.models import User
 
 
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import action
+
 
 class GetPostDeleteViewSet(
     mixins.CreateModelMixin,
@@ -43,11 +45,26 @@ class TitlesViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    http_method_names = ('get', 'post', 'patch', 'delete')
     permission_classes = (IsAdminPermission,)
-    filter_backends = (DjangoFilterBackend, SearchFilter)
+    lookup_field = 'username'
+    filter_backends = (SearchFilter, )
     search_fields = ('username',)
 
-    #def get_permissions(self):
-    #    if self.action == 'list':
-    #        return (IsAdminUser(),)
-    #    return super().get_permissions()
+    # Нестандартное действие - для этого пишется метод 
+    # и оборачивается в декоратор @action
+    # URL эндпоинта = <префикс>/<название_метода>
+    @action(
+        methods=(['get', 'patch']),
+        detail=False,
+        permission_classes = (IsAuthenticated,)
+    )
+    def me(self, request):
+        if request.method == 'GET':
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data)
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        # перед serilizer.save всегда должен быть serializer.is_valid
+        serializer.save(role=request.user.role)
+        return Response(serializer.data)
