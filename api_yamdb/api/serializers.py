@@ -2,7 +2,37 @@ import datetime
 
 from rest_framework import serializers
 
-from reviews.models import Titles, Categories, Genres
+from reviews.models import Titles, Categories, Genres, GenresTitles
+
+
+class GenresSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genres
+        lookup_field = 'slug'
+        extra_kwargs = {
+            'url': {'lookup_field': 'slug'}
+        }
+
+
+class CategoriesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Categories
+        lookup_field = 'slug'
+        extra_kwargs = {
+            'url': {'lookup_field': 'slug'}
+        }
+
+
+class GenreTitleSerializer(serializers.ModelSerializer):
+    genre = GenresSerializer(many=True)
+    category = CategoriesSerializer()
+
+    class Meta:
+        model = Genres
+        fields = '__all__'
 
 from users.models import User
 from rest_framework.validators import UniqueTogetherValidator
@@ -59,7 +89,6 @@ class TitlesSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Titles
-
 
 class UserSerializer(serializers.ModelSerializer):
     

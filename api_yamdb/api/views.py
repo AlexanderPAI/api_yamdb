@@ -1,9 +1,13 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
-from rest_framework.filters import  SearchFilter
+
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAdminUser, DjangoModelPermissionsOrAnonReadOnly
 
-from api.permissions import IsAdminPermission # IsAdminOrReadOnly
-from api.serializers import GenresSerializer, CategoriesSerializer, TitlesSerializer, UserSerializer
+from api.permissions import IsAdminOrReadOnly
+from api.serializers import GenresSerializer, CategoriesSerializer, TitlesSerializer, GenreTitleSerializer
+
+
 from reviews.models import Genres, Titles, Categories
 from users.models import User
 
@@ -45,7 +49,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre', 'category', 'year', 'name')
 
-
+    
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
