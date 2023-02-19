@@ -1,20 +1,17 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
-
+from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAdminUser, DjangoModelPermissionsOrAnonReadOnly
+from rest_framework.permissions import (DjangoModelPermissionsOrAnonReadOnly,
+                                        IsAdminUser, IsAuthenticated)
+from rest_framework.response import Response
 
 from api.permissions import IsAdminOrReadOnly, IsAdminPermission
-from api.serializers import GenresSerializer, CategoriesSerializer, TitlesSerializer, GenreTitleSerializer, UserSerializer
-
-
-from reviews.models import Genres, Titles, Categories
+from api.serializers import (CategoriesSerializer, GenresSerializer,
+                             GenreTitleSerializer, TitlesSerializer,
+                             UserSerializer, CommentSerializer, ReviewSerializer)
+from reviews.models import Categories, Genres, Titles, Comment, Review
 from users.models import User
-
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.decorators import action
 
 
 class GetPostDeleteViewSet(
@@ -76,3 +73,20 @@ class UserViewSet(viewsets.ModelViewSet):
         # перед serilizer.save всегда должен быть serializer.is_valid
         serializer.save(role=request.user.role)
         return Response(serializer.data)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Представление модели комменатриев."""
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """Представление модели отзывов"""
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    # permission_classes = (IsAdminOrReadOnly,)

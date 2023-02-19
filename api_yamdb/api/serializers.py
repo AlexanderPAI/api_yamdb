@@ -2,7 +2,8 @@ import datetime
 
 from rest_framework import serializers
 
-from reviews.models import Titles, Categories, Genres, GenresTitles
+from reviews.models import (Categories, Comment, Genres, GenresTitles, Review,
+                            Titles)
 
 
 class GenresSerializer(serializers.ModelSerializer):
@@ -34,9 +35,10 @@ class GenreTitleSerializer(serializers.ModelSerializer):
         model = Genres
         fields = '__all__'
 
-from users.models import User
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.decorators import action
+from rest_framework.validators import UniqueTogetherValidator
+
+from users.models import User
 
 
 class GenresSerializer(serializers.ModelSerializer):
@@ -102,3 +104,29 @@ class UserSerializer(serializers.ModelSerializer):
                 fields=('username', 'email')
             )
         ]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор отзывов."""
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Review
+        read_only_fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор комментариев."""
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Comment
+        read_only_fields = ('id', 'text', 'author', 'pub_date')

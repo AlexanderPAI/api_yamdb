@@ -1,8 +1,9 @@
 from csv import DictReader
+
 from django.core.management import BaseCommand
 
 # Import the model
-from reviews.models import Titles, Categories, Genres, GenresTitles
+from reviews.models import Categories, Genres, GenresTitles, Titles
 
 MODELS = [Titles, Categories, Genres]
 

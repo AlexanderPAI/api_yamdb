@@ -1,4 +1,5 @@
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticatedOrReadOnly, BasePermission, AllowAny
+from rest_framework.permissions import (SAFE_METHODS, AllowAny, BasePermission,
+                                        IsAuthenticatedOrReadOnly)
 
 
 class IsAdminOrReadOnly(IsAuthenticatedOrReadOnly):
