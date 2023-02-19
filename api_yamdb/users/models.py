@@ -1,35 +1,40 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Пока хер его знает, как реализовывать права,
-# изначально предполагал, что буду делать через permissions.
-# Через админку кастомная модель работает. Для разработки моделей Сёмы пока хватит.
-# Это заглушка, пока не разберусь, что делать с choices.
+
 ROLES = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Админ'),
+    ('user', 'user'),
+    ('moderator', 'moderator'),
+    ('admin', 'admin'),
 )
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя"""
     email = models.EmailField(
-        blank=True,
-        verbose_name='Электронная почта',
-    )
-    role = models.CharField(
-        max_length=20,
-        choices=ROLES,
-        default='user',
-        verbose_name='Роль',
+        'Электронная почта',
+        unique=True,
     )
     bio = models.TextField(
+        'О себе',
         blank=True,
-        verbose_name='Биография'
+        null=False,
+    )
+    role = models.CharField(
+        'Роль',
+        max_length=30,
+        choices=ROLES,
+        default='user'
     )
 
     class Meta:
+        ordering = ('id',) # иначе тестах выпадает два Warnings
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_user'
+            )
+        ]
+
         verbose_name='Пользователь'
         verbose_name_plural='Пользователи'
     
