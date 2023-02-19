@@ -5,36 +5,6 @@ from rest_framework import serializers
 from reviews.models import (Categories, Comment, Genres, GenresTitles, Review,
                             Titles)
 
-
-class GenresSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('name', 'slug')
-        model = Genres
-        lookup_field = 'slug'
-        extra_kwargs = {
-            'url': {'lookup_field': 'slug'}
-        }
-
-
-class CategoriesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ('name', 'slug')
-        model = Categories
-        lookup_field = 'slug'
-        extra_kwargs = {
-            'url': {'lookup_field': 'slug'}
-        }
-
-
-class GenreTitleSerializer(serializers.ModelSerializer):
-    genre = GenresSerializer(many=True)
-    category = CategoriesSerializer()
-
-    class Meta:
-        model = Genres
-        fields = '__all__'
-
 from rest_framework.decorators import action
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -79,7 +49,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     )
     genre = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Categories.objects.all(),
+        queryset=Genres.objects.all(),
         required=True,
         many=True
     )
@@ -91,6 +61,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Titles
+
 
 class UserSerializer(serializers.ModelSerializer):
     
