@@ -28,7 +28,7 @@ class GenresViewSet(GetPostDeleteViewSet):
     serializer_class = GenresSerializer
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
 
 class CategoriesViewSet(GetPostDeleteViewSet):
@@ -36,16 +36,17 @@ class CategoriesViewSet(GetPostDeleteViewSet):
     serializer_class = CategoriesSerializer
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
+    
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre', 'category', 'year', 'name')
-
+    
     
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

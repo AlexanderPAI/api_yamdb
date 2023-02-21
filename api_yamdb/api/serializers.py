@@ -2,18 +2,13 @@ import datetime
 
 from rest_framework import serializers
 
+from reviews.models import (Categories, Comment, Genres, GenresTitles, Review,
+                            Titles)
 
+from rest_framework.decorators import action
 from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import User
-
-from reviews.models import (
-    Categories,
-    Comment,
-    Genres,
-    Review,
-    Titles
-)
 
 
 class GenresSerializer(serializers.ModelSerializer):
@@ -37,7 +32,22 @@ class CategoriesSerializer(serializers.ModelSerializer):
         }
 
 
+class GenreTitleSerializer(serializers.ModelSerializer):
+    genre = GenresSerializer(many=True)
+    category = CategoriesSerializer()
+
+    class Meta:
+        model = Genres
+        fields = '__all__'
+
+
+#class CategoryField(serializers.RelatedField):
+#    def to_representation(self, value):
+#        return value
+
+
 class TitlesSerializer(serializers.ModelSerializer):
+    #category = CategoriesSerializer()
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Categories.objects.all(),
@@ -57,6 +67,14 @@ class TitlesSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Titles
+    
+    #def create(self, validated_data):
+    #    category = validated_data.pop('category')
+    #    title = Titles.objects.create(**validated_data)
+    #    current_category, status = Categories.objects.get_or_create(**category)
+    #    Titles.objects.create(title=title, **current_category)
+    #    return title
+
 
 class UserSerializer(serializers.ModelSerializer):
     
