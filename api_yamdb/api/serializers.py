@@ -38,26 +38,20 @@ class GenreTitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genres
-        fields = '__all__'
-
-
-#class CategoryField(serializers.RelatedField):
-#    def to_representation(self, value):
-#        return value
+        fields = ('name', 'category')
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    #category = CategoriesSerializer()
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Categories.objects.all(),
-        required=True
+         slug_field='slug',
+         queryset=Categories.objects.all(),
+         required=True
     )
     genre = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Genres.objects.all(),
-        required=True,
-        many=True
+         slug_field='slug',
+         queryset=Genres.objects.all(),
+         required=True,
+         many=True
     )
     year = serializers.IntegerField(
         min_value=0,
@@ -65,15 +59,13 @@ class TitlesSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'genre', 'category', 'description')
         model = Titles
-    
-    #def create(self, validated_data):
-    #    category = validated_data.pop('category')
-    #    title = Titles.objects.create(**validated_data)
-    #    current_category, status = Categories.objects.get_or_create(**category)
-    #    Titles.objects.create(title=title, **current_category)
-    #    return title
+
+
+class TitlesForReadSerializer(TitlesSerializer):
+    category = CategoriesSerializer(read_only=True)
+    genre = GenresSerializer(read_only=True, many=True)
 
 
 class UserSerializer(serializers.ModelSerializer):

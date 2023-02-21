@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from api.permissions import IsAdminOrReadOnly, IsAdminPermission
 from api.serializers import (CategoriesSerializer, GenresSerializer,
                              GenreTitleSerializer, TitlesSerializer,
-                             UserSerializer, CommentSerializer, ReviewSerializer)
+                             UserSerializer, CommentSerializer, ReviewSerializer, TitlesForReadSerializer)
 from reviews.models import Categories, Genres, Titles, Comment, Review
 from users.models import User
 
@@ -27,7 +27,8 @@ class GenresViewSet(GetPostDeleteViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
     filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    #filterset_fields = ('slug',)
+    search_fields = ('slug',)
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
 
@@ -35,7 +36,8 @@ class CategoriesViewSet(GetPostDeleteViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
     filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    #filterset_fields = ('slug',)
+    search_fields = ('slug',)
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     
@@ -44,8 +46,14 @@ class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre', 'category', 'year', 'name')
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', 'year', 'genre', 'category', 'description')
+    filterset_fields = ('name', 'year', 'genre__slug', 'category', 'description')
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitlesForReadSerializer
+        return TitlesSerializer
     
     
 class UserViewSet(viewsets.ModelViewSet):
@@ -53,7 +61,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
     permission_classes = (IsAdminPermission,)
-    lookup_field = 'username'
+    lookup_field = 'username' # заменить в эндпоинте id на username
     filter_backends = (SearchFilter, )
     search_fields = ('username',)
 
