@@ -108,10 +108,11 @@ class Review(models.Model):
         related_name='titles'
     )
     #score = models.ForeignKey(
-    #    validators=[
-    #        MinValueValidator(0),
+    #    validators=(
+    #        MinValueValidator(1),
     #        MaxValueValidator(10)
-    #    ]
+    #    ),
+    #    error_messages={'validators': 'Оценка от 1 до 10'}
     #)
     pub_date = models.DateTimeField(
         'Дата добавления',
