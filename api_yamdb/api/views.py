@@ -6,6 +6,7 @@ from rest_framework.permissions import (DjangoModelPermissionsOrAnonReadOnly,
                                         IsAdminUser, IsAuthenticated)
 from rest_framework.response import Response
 
+from api.filters import TitleFilter
 from api.permissions import IsAdminOrReadOnly, IsAdminPermission
 from api.serializers import (CategoriesSerializer, GenresSerializer,
                              GenreTitleSerializer, TitlesSerializer,
@@ -43,12 +44,21 @@ class CategoriesViewSet(GetPostDeleteViewSet):
     
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
+    queryset = Titles.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name', 'year', 'genre', 'category', 'description')
-    filterset_fields = ('name', 'year', 'genre__slug', 'category', 'description')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('name', 'year', 'description')
+
+    def get_queryset(self):
+        queryset = Titles.objects.all()
+        genre = self.request.query_params.get('genre')
+        category = self.request.query_params.get('category')
+        if genre is not None:
+            queryset = queryset.filter(genre__slug=genre)
+        if category is not None:
+            queryset = queryset.filter(category__slug=category)
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
