@@ -29,6 +29,7 @@ class Test05ReviewAPI:
             'Проверьте, что GET-запрос неавторизованного пользователя к '
             '`/api/v1/titles/{title_id}/reviews/` возвращает ответ со '
             'статусом 200.'
+            f'{response.status_code}'
         )
 
         response = client.post(

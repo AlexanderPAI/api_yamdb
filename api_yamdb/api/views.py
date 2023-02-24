@@ -3,16 +3,17 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (DjangoModelPermissionsOrAnonReadOnly,
-                                        IsAdminUser, IsAuthenticated)
+                                        IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
 # from api.filters import TitleFilter
-from api.permissions import IsAdminOrReadOnly, IsAdminPermission
+from api.permissions import IsAdminOrReadOnly, IsAdminPermission, IsAccessEditPermission
 from api.serializers import (CategorySerializer, GenreSerializer,
                              GenreTitleSerializer, TitleSerializer,
                              UserSerializer, CommentSerializer, ReviewSerializer, TitleForReadSerializer)
 from reviews.models import Category, Genre, Title, Comment, Review
 from users.models import User
+from django.shortcuts import get_object_or_404
 
 
 class GetPostDeleteViewSet(
@@ -95,17 +96,36 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Представление модели комменатриев."""
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    permission_classes = (IsAccessEditPermission,)
+
+    def get_queryset(self):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Представление модели отзывов"""
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAccessEditPermission,)
+    
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        new_queryset = Review.objects.filter(title=title_id)
+        return new_queryset
+    
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id')
+        )
+        serializer.save(
+            author=self.request.user, title=title
+        )

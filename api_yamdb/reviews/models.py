@@ -18,11 +18,12 @@ class Category(models.Model):
         help_text='(Пример: films)'
     )
 
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+    
     def __str__(self):
         return self.name
-
-    class Meta:
-        ordering = ['-name']
 
 
 class Genre(models.Model):
@@ -38,11 +39,14 @@ class Genre(models.Model):
         help_text='(Пример: films)'
     )
 
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ['-name']
+    
 
 
 class Title(models.Model):
@@ -76,6 +80,10 @@ class Title(models.Model):
         through='GenreTitle'
     )
 
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
     def __str__(self):
         return self.name
 
@@ -98,14 +106,14 @@ class Review(models.Model):
     )
     text = models.TextField(
         max_length=1000,
-        verbose_name='Отзыв',
+        verbose_name='Текст отзыва',
         help_text='Напишите вашу рецензию'
     )
     title = models.ForeignKey(
         Title,
-        verbose_name='Название',
+        verbose_name='Произведение',
         on_delete=models.CASCADE,
-        related_name='titles'
+        related_name='reviews'
     )
     score = models.IntegerField(
         'Рейтинг',
@@ -120,6 +128,13 @@ class Review(models.Model):
         ordering = ('-pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review'
+            )
+        ]
 
     def __str__(self):
         return self.text
@@ -137,7 +152,7 @@ class Comment(models.Model):
         Review,
         verbose_name='Отзыв',
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='comments'
     )
     text = models.TextField(
         max_length=1700,
