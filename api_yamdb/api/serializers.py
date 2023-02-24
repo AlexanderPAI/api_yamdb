@@ -1,16 +1,12 @@
 import datetime
 
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-
-from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
-                            Title)
-
-from rest_framework.decorators import action
 from rest_framework.validators import UniqueTogetherValidator
 
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
-from django.shortcuts import get_object_or_404
-from django.db.models import Avg
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -45,15 +41,15 @@ class GenreTitleSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
-         slug_field='slug',
-         queryset=Category.objects.all(),
-         required=True
+        slug_field='slug',
+        queryset=Category.objects.all(),
+        required=True
     )
     genre = serializers.SlugRelatedField(
-         slug_field='slug',
-         queryset=Genre.objects.all(),
-         required=True,
-         many=True
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        required=True,
+        many=True
     )
     year = serializers.IntegerField(
         min_value=0,
@@ -63,9 +59,11 @@ class TitleSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'name', 'year', 'rating', 'genre', 'category', 'description')
+        fields = (
+            'id', 'name', 'year', 'rating', 'genre', 'category', 'description'
+        )
         model = Title
-    
+
     def get_rating(self, obj):
         obj = obj.reviews.all().aggregate(rating=Avg('score'))
         return obj['rating']
@@ -76,13 +74,14 @@ class TitleForReadSerializer(TitleSerializer):
     genre = GenreSerializer(read_only=True, many=True)
 
 
-
 class UserSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
-        
+
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
         validators = [
             UniqueTogetherValidator(
                 queryset=User.objects.all(),
@@ -108,7 +107,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Review
-    
+
     def validate(self, data):
         request = self.context['request']
         author = request.user
@@ -118,7 +117,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             request.method == 'POST'
             and Review.objects.filter(title=title, author=author).exists()
         ):
-            raise serializers.ValidationError('Может существовать только один отзыв!')
+            raise serializers.ValidationError(
+                'Может существовать только один отзыв!'
+            )
         return data
 
 
