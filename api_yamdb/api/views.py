@@ -8,10 +8,10 @@ from rest_framework.response import Response
 
 # from api.filters import TitleFilter
 from api.permissions import IsAdminOrReadOnly, IsAdminPermission
-from api.serializers import (CategoriesSerializer, GenresSerializer,
-                             GenreTitleSerializer, TitlesSerializer,
-                             UserSerializer, CommentSerializer, ReviewSerializer, TitlesForReadSerializer)
-from reviews.models import Categories, Genres, Titles, Comment, Review
+from api.serializers import (CategorySerializer, GenreSerializer,
+                             GenreTitleSerializer, TitleSerializer,
+                             UserSerializer, CommentSerializer, ReviewSerializer, TitleForReadSerializer)
+from reviews.models import Category, Genre, Title, Comment, Review
 from users.models import User
 
 
@@ -24,18 +24,18 @@ class GetPostDeleteViewSet(
     pass
 
 
-class GenresViewSet(GetPostDeleteViewSet):
-    queryset = Genres.objects.all()
-    serializer_class = GenresSerializer
+class GenreViewSet(GetPostDeleteViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
     filter_backends = (SearchFilter,)
     #filterset_fields = ('slug',)
     search_fields = ('name',)
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
 
-class CategoriesViewSet(GetPostDeleteViewSet):
-    queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
+class CategoryViewSet(GetPostDeleteViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
     filter_backends = (SearchFilter,)
     #filterset_fields = ('slug',)
     search_fields = ('name',)
@@ -43,15 +43,15 @@ class CategoriesViewSet(GetPostDeleteViewSet):
     lookup_field = 'slug'
     
 
-class TitlesViewSet(viewsets.ModelViewSet):
-    serializer_class = TitlesSerializer
-    queryset = Titles.objects.all()
+class TitleViewSet(viewsets.ModelViewSet):
+    serializer_class = TitleSerializer
+    queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (SearchFilter, DjangoFilterBackend)
     filterset_fields = ('name', 'year', 'description')
 
     def get_queryset(self):
-        queryset = Titles.objects.all()
+        queryset = Title.objects.all()
         genre = self.request.query_params.get('genre')
         category = self.request.query_params.get('category')
         if genre is not None:
@@ -62,8 +62,8 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return TitlesForReadSerializer
-        return TitlesSerializer
+            return TitleForReadSerializer
+        return TitleSerializer
     
     
 class UserViewSet(viewsets.ModelViewSet):

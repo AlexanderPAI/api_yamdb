@@ -2,8 +2,8 @@ import datetime
 
 from rest_framework import serializers
 
-from reviews.models import (Categories, Comment, Genres, GenresTitles, Review,
-                            Titles)
+from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
+                            Title)
 
 from rest_framework.decorators import action
 from rest_framework.validators import UniqueTogetherValidator
@@ -11,21 +11,21 @@ from rest_framework.validators import UniqueTogetherValidator
 from users.models import User
 
 
-class GenresSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('name', 'slug')
-        model = Genres
+        model = Genre
         lookup_field = 'slug'
         extra_kwargs = {
             'url': {'lookup_field': 'slug'}
         }
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
-        model = Categories
+        model = Category
         lookup_field = 'slug'
         extra_kwargs = {
             'url': {'lookup_field': 'slug'}
@@ -33,23 +33,23 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class GenreTitleSerializer(serializers.ModelSerializer):
-    genre = GenresSerializer(many=True)
-    category = CategoriesSerializer()
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
 
     class Meta:
-        model = Genres
+        model = Genre
         fields = ('name', 'category')
 
 
-class TitlesSerializer(serializers.ModelSerializer):
+class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
          slug_field='slug',
-         queryset=Categories.objects.all(),
+         queryset=Category.objects.all(),
          required=True
     )
     genre = serializers.SlugRelatedField(
          slug_field='slug',
-         queryset=Genres.objects.all(),
+         queryset=Genre.objects.all(),
          required=True,
          many=True
     )
@@ -60,12 +60,12 @@ class TitlesSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'year', 'genre', 'category', 'description')
-        model = Titles
+        model = Title
 
 
-class TitlesForReadSerializer(TitlesSerializer):
-    category = CategoriesSerializer(read_only=True)
-    genre = GenresSerializer(read_only=True, many=True)
+class TitleForReadSerializer(TitleSerializer):
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
