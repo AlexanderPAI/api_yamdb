@@ -5,7 +5,7 @@ from django.db import models
 User = get_user_model()
 
 
-class Categories(models.Model):
+class Category(models.Model):
     name = models.CharField(
         verbose_name='Название категории',
         help_text='Введите название вашей категории',
@@ -18,14 +18,15 @@ class Categories(models.Model):
         help_text='(Пример: films)'
     )
 
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+    
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ['-name']
 
-
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField(
         verbose_name='Название категории',
         help_text='Введите название вашей категории',
@@ -38,14 +39,17 @@ class Genres(models.Model):
         help_text='(Пример: films)'
     )
 
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ['-name']
+    
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField(
         verbose_name='Название произведения',
         help_text='Введите название произведения',
@@ -60,7 +64,7 @@ class Titles(models.Model):
         null=True
     )
     category = models.ForeignKey(
-        Categories,
+        Category,
         on_delete=models.SET_NULL,
         verbose_name='Категория',
         related_name='category',
@@ -69,20 +73,24 @@ class Titles(models.Model):
         null=True
     )
     genre = models.ManyToManyField(
-        Genres,
+        Genre,
         verbose_name='Жанр',
         related_name='genre',
         help_text='Выберите жанр',
-        through='GenresTitles'
+        through='GenreTitle'
     )
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name
 
 
-class GenresTitles(models.Model):
-    genre = models.ForeignKey(Genres, on_delete=models.CASCADE)
-    title = models.ForeignKey(Titles, on_delete=models.CASCADE)
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.genre} {self.title}'
@@ -98,21 +106,18 @@ class Review(models.Model):
     )
     text = models.TextField(
         max_length=1000,
-        verbose_name='Отзыв',
+        verbose_name='Текст отзыва',
         help_text='Напишите вашу рецензию'
     )
     title = models.ForeignKey(
-        Titles,
-        verbose_name='Название',
+        Title,
+        verbose_name='Произведение',
         on_delete=models.CASCADE,
-        related_name='titles'
+        related_name='reviews'
     )
-    #score = models.ForeignKey(
-    #    validators=[
-    #        MinValueValidator(0),
-    #        MaxValueValidator(10)
-    #    ]
-    #)
+    score = models.IntegerField(
+        'Рейтинг',
+    )
     pub_date = models.DateTimeField(
         'Дата добавления',
         auto_now_add=True,
@@ -123,6 +128,13 @@ class Review(models.Model):
         ordering = ('-pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review'
+            )
+        ]
 
     def __str__(self):
         return self.text
@@ -140,7 +152,7 @@ class Comment(models.Model):
         Review,
         verbose_name='Отзыв',
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='comments'
     )
     text = models.TextField(
         max_length=1700,

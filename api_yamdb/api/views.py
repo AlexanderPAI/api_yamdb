@@ -3,15 +3,17 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (DjangoModelPermissionsOrAnonReadOnly,
-                                        IsAdminUser, IsAuthenticated)
+                                        IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
-from api.permissions import IsAdminOrReadOnly, IsAdminPermission
-from api.serializers import (CategoriesSerializer, GenresSerializer,
-                             GenreTitleSerializer, TitlesSerializer,
-                             UserSerializer, CommentSerializer, ReviewSerializer)
-from reviews.models import Categories, Genres, Titles, Comment, Review
+# from api.filters import TitleFilter
+from api.permissions import IsAdminOrReadOnly, IsAdminPermission, IsAccessEditPermission
+from api.serializers import (CategorySerializer, GenreSerializer,
+                             GenreTitleSerializer, TitleSerializer,
+                             UserSerializer, CommentSerializer, ReviewSerializer, TitleForReadSerializer)
+from reviews.models import Category, Genre, Title, Comment, Review
 from users.models import User
+from django.shortcuts import get_object_or_404
 
 
 class GetPostDeleteViewSet(
@@ -23,36 +25,54 @@ class GetPostDeleteViewSet(
     pass
 
 
-class GenresViewSet(GetPostDeleteViewSet):
-    queryset = Genres.objects.all()
-    serializer_class = GenresSerializer
+class GenreViewSet(GetPostDeleteViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
     filter_backends = (SearchFilter,)
+    #filterset_fields = ('slug',)
     search_fields = ('name',)
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
 
-class CategoriesViewSet(GetPostDeleteViewSet):
-    queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
+class CategoryViewSet(GetPostDeleteViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
     filter_backends = (SearchFilter,)
+    #filterset_fields = ('slug',)
     search_fields = ('name',)
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
+    
 
-class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
-    serializer_class = TitlesSerializer
-    # permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('genre', 'category', 'year', 'name')
+class TitleViewSet(viewsets.ModelViewSet):
+    serializer_class = TitleSerializer
+    queryset = Title.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    filterset_fields = ('name', 'year', 'description')
 
+    def get_queryset(self):
+        queryset = Title.objects.all()
+        genre = self.request.query_params.get('genre')
+        category = self.request.query_params.get('category')
+        if genre is not None:
+            queryset = queryset.filter(genre__slug=genre)
+        if category is not None:
+            queryset = queryset.filter(category__slug=category)
+        return queryset
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleForReadSerializer
+        return TitleSerializer
+    
     
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
     permission_classes = (IsAdminPermission,)
-    lookup_field = 'username'
+    lookup_field = 'username' # заменить в эндпоинте id на username
     filter_backends = (SearchFilter, )
     search_fields = ('username',)
 
@@ -76,17 +96,36 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Представление модели комменатриев."""
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    permission_classes = (IsAccessEditPermission,)
+
+    def get_queryset(self):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Представление модели отзывов"""
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    # permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAccessEditPermission,)
+    
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        new_queryset = Review.objects.filter(title=title_id)
+        return new_queryset
+    
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id')
+        )
+        serializer.save(
+            author=self.request.user, title=title
+        )

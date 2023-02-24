@@ -158,6 +158,7 @@ def create_single_review(client, title_id, text, score):
         'Если POST-запрос авторизованного пользователя к '
         '`/api/v1/titles/{title_id}/reviews/` содержит корректные данные - '
         'должен вернуться ответ со статусом 201.'
+        f'{response.status_code}'
     )
     return response
 

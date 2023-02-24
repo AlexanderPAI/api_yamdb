@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from reviews.models import Categories, Genres, GenresTitles, Titles
+from reviews.models import Category, Genre, GenreTitle, Title
 
 
 class TitlesAdmin(admin.ModelAdmin):
@@ -42,7 +42,7 @@ class GenresTitlesAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Titles, TitlesAdmin,)
-admin.site.register(Categories, CategoriesAdmin)
-admin.site.register(Genres, GenresAdmin)
-admin.site.register(GenresTitles, GenresTitlesAdmin)
+admin.site.register(Title, TitlesAdmin,)
+admin.site.register(Category, CategoriesAdmin)
+admin.site.register(Genre, GenresAdmin)
+admin.site.register(GenreTitle, GenresTitlesAdmin)
