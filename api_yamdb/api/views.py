@@ -13,7 +13,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitleForReadSerializer, TitleSerializer,
                              UserSerializer)
-from api.utils import code_generator
+from api.utils import code_generator, FROM_EMAIL
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
@@ -30,6 +30,7 @@ class GetPostDeleteViewSet(
 
 
 class GenreViewSet(GetPostDeleteViewSet):
+    """Представление для жанра."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = (SearchFilter,)
@@ -39,6 +40,7 @@ class GenreViewSet(GetPostDeleteViewSet):
 
 
 class CategoryViewSet(GetPostDeleteViewSet):
+    """Представление для категории."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (SearchFilter,)
@@ -49,6 +51,7 @@ class CategoryViewSet(GetPostDeleteViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Представление для произведения."""
     serializer_class = TitleSerializer
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
@@ -72,6 +75,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Представление для пользователя."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -104,6 +108,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Представление для комментария."""
     serializer_class = CommentSerializer
     permission_classes = (IsAccessEditPermission,)
 
@@ -121,6 +126,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Представление для отзыва."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAccessEditPermission,)
 
@@ -140,18 +146,24 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class SignUpViewSet(viewsets.ModelViewSet):
+    """
+    Представление для создания пользователя и отправки кода подтверждения.
+    """
     queryset = User.objects.all()
     serializer_class = SignUpSerializer
     permission_classes = (AllowAny,)
 
     def create(self, request):
         serializer = SignUpSerializer(data=request.data)
+        username = request.data.get('username')
+        email = request.data.get('email')
         if User.objects.filter(
-            username=request.data.get('username'),
-            email=request.data.get('email')
+            username=username,
+            email=email
         ).exists():
             user, created = User.objects.get_or_create(
-                username=request.data.get('username')
+                username=username,
+                email=email
             )
             if created is False:
                 confirmation_code = code_generator()
@@ -162,21 +174,22 @@ class SignUpViewSet(viewsets.ModelViewSet):
         serializer.save()
         user = get_object_or_404(
             User,
-            username=request.data['username'],
-            email=request.data['email']
+            username=username,
+            email=email
         )
         confirmation_code = code_generator()
         user.confirmation_code = confirmation_code
         send_mail(
             subject='Код подтверждения',
             message=f'Код подтверждения: {confirmation_code}',
-            from_email='info@olo.com',
-            recipient_list=(request.data['email'],),
+            from_email=FROM_EMAIL,  # FROM_EMAIL определяется в utils.py
+            recipient_list=(email,),
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GetTokenView(views.APIView):
+    """Представление для получения токена существующим пользователем."""
     def post(self, request):
         serializer = GetTokenSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):

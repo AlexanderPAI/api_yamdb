@@ -10,6 +10,7 @@ from users.models import User
 
 
 class GenreSerializer(serializers.ModelSerializer):
+
     class Meta:
         fields = ('name', 'slug')
         model = Genre
@@ -55,7 +56,6 @@ class TitleSerializer(serializers.ModelSerializer):
         min_value=0,
         max_value=datetime.date.today().year
     )
-
     rating = serializers.SerializerMethodField()
 
     class Meta:
@@ -77,7 +77,6 @@ class TitleForReadSerializer(TitleSerializer):
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
-
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
@@ -124,7 +123,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-
     review = serializers.PrimaryKeyRelatedField(read_only=True)
     author = serializers.SlugRelatedField(
         slug_field='username',
@@ -138,7 +136,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-
     username = serializers.RegexField(
         required=True,
         max_length=150,

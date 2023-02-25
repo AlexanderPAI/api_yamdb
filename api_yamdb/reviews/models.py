@@ -1,10 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
 
 User = get_user_model()
 
 
 class Category(models.Model):
+    """Модель категории."""
     name = models.CharField(
         verbose_name='Название категории',
         help_text='Введите название вашей категории',
@@ -26,6 +29,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
+    """Модель жанра."""
     name = models.CharField(
         verbose_name='Название категории',
         help_text='Введите название вашей категории',
@@ -47,6 +51,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """Модель произведения."""
     name = models.CharField(
         verbose_name='Название произведения',
         help_text='Введите название произведения',
@@ -54,6 +59,7 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         verbose_name='Дата публикации',
+        db_index=True
     )
     description = models.TextField(
         verbose_name='Описание произведения',
@@ -86,6 +92,7 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
+    """Вспомогательная модель для ManyToMany: Жанр-Произведение."""
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
@@ -94,7 +101,7 @@ class GenreTitle(models.Model):
 
 
 class Review(models.Model):
-    """Модель отзывов."""
+    """Модель отзыва."""
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
@@ -113,10 +120,14 @@ class Review(models.Model):
         related_name='reviews'
     )
     score = models.IntegerField(
-        'Рейтинг',
+        verbose_name='Рейтинг',
+        validators=(
+            MinValueValidator(0),
+            MaxValueValidator(10)
+        )
     )
     pub_date = models.DateTimeField(
-        'Дата добавления',
+        verbose_name='Дата добавления',
         auto_now_add=True,
         db_index=True
     )
@@ -138,7 +149,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    """Модель комментариев."""
+    """Модель комментария."""
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
