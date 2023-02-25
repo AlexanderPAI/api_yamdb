@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status, views
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.permissions import (IsAccessEditPermission, IsAdminOrReadOnly,
@@ -10,10 +10,14 @@ from api.permissions import (IsAccessEditPermission, IsAdminOrReadOnly,
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, ReviewSerializer,
                              TitleForReadSerializer, TitleSerializer,
-                             UserSerializer)
+                             UserSerializer, SignUpSerializer, GetTokenSerializer)
 from django_filters.rest_framework import DjangoFilterBackend
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+
+from api.utils import code_generator
+from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 class GetPostDeleteViewSet(
@@ -133,3 +137,45 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=self.request.user, title=title
         )
+
+
+class SignUpViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = SignUpSerializer
+    permission_classes = (AllowAny,)
+
+    def create(self, request):
+        serializer = SignUpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+        )
+        confirmation_code = code_generator()
+        user.save()
+        send_mail(
+            subject='Код подтверждения',
+            message=f'Код подтверждения: {confirmation_code}',
+            from_email='info@olo.com',
+            recipient_list=(email,),
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GetTokenView(views.APIView):
+    def post(self, request):
+        serializer = GetTokenSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = get_object_or_404(
+                User,
+                username=serializer.validated_data['username'],
+            )
+            if serializer.validated_data['confirmation_code'] == user.confirmation_code:
+                return Response(
+                    {'token': str(AccessToken.for_user(user))},
+                    status=status.HTTP_200_OK
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

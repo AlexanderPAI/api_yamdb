@@ -24,9 +24,13 @@ class User(AbstractUser):
         choices=ROLES,
         default='user'
     )
+    confirmation_code = models.IntegerField(
+        null=True,
+        blank=True,
+    )
 
     class Meta:
-        ordering = ('id',) # иначе тестах выпадает два Warnings
+        ordering = ('id',)  # иначе тестах выпадает два Warnings
         constraints = [
             models.UniqueConstraint(
                 fields=['username', 'email'],
@@ -34,8 +38,8 @@ class User(AbstractUser):
             )
         ]
 
-        verbose_name='Пользователь'
-        verbose_name_plural='Пользователи'
-    
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
     def __str__(self):
         return self.username

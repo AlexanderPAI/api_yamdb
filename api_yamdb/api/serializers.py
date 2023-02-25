@@ -135,3 +135,46 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Comment
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+
+    username = serializers.RegexField(
+        required=True,
+        max_length=150,
+        regex=r'^[\w.@+-]',
+    )
+
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+    )
+
+    class Meta:
+        fields = ('username', 'email')
+        model = User
+    
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Имя пользователя не может быть "me"'
+            )
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким именем уже существует'
+            )
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким email уже существует'
+            )
+        return value
+
+
+class GetTokenSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('username', 'confirmation_code')
+        model = User
