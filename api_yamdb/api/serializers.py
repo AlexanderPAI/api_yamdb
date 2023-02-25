@@ -153,7 +153,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('username', 'email')
         model = User
-    
+
     def validate_username(self, value):
         if value == 'me':
             raise serializers.ValidationError(
