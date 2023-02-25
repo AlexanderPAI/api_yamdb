@@ -1,4 +1,5 @@
 # path: venv/Lib/site-packages/django/core/management/commands/import_cvs.py
+# for start print: python manage.py import_cvs
 from csv import DictReader
 
 from django.core.management import BaseCommand
@@ -69,10 +70,10 @@ class Command(BaseCommand):
         for row in DictReader(open('./static/data/comments.csv', encoding="utf8")):
             user_name = User.objects.get(id=row['author'])
             review_id = Review.objects.get(pk=row['review_id'])
-            review = Comment(id=row['id'],
-                             review=review_id,
-                             author=user_name,
-                             text=row['text'],
-                             pub_date=row['pub_date']
-                             )
-            review.save()
+            comment = Comment(id=row['id'],
+                              review=review_id,
+                              author=user_name,
+                              text=row['text'],
+                              pub_date=row['pub_date']
+                              )
+            comment.save()
