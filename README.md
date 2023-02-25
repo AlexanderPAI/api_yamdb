@@ -95,7 +95,16 @@ http://127.0.0.1:8000/api/v1/auth/token/
 Доступна после запуска проекта - см. п.4:
 http://127.0.0.1:8000/redoc/
 
-## 6. Перечень зависимостей requirements.txt
+## 7. Импорт данных из csv-файлов
+Разместить в каталоге проекта `static/data/` csv-файлы, соответствующие названиям моделей.
+Например static/data/category.csv
+
+Ввести в консоли:
+```bash
+python manage.py import_cvs
+```
+
+## 8. Перечень зависимостей requirements.txt
 ```
 asgiref==3.6.0
 atomicwrites==1.4.1
