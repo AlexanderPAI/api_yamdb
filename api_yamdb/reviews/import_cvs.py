@@ -15,7 +15,7 @@ from reviews.models import (
     Comment
 )
 
-MODELS = [Title, Category, Genre, Review, GenreTitle, Comment, ]
+MODELS = [Title, Category, Genre, Review, GenreTitle, Comment, User]
 
 
 class Command(BaseCommand):
