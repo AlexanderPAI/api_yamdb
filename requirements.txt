@@ -13,7 +13,6 @@ Django==3.2
 django-filter==22.1
 django-templated-mail==1.1.1
 djangorestframework==3.12.4
-djangorestframework-simplejwt==4.8.0
 flake8==6.0.0
 idna==3.4
 iniconfig==2.0.0
@@ -44,3 +43,4 @@ sqlparse==0.4.3
 toml==0.10.2
 uritemplate==4.1.1
 urllib3==1.26.14
+djangorestframework-simplejwt==4.8.0
